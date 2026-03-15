@@ -1,1 +1,258 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>MARSA – Maron Space Agency</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --void:#020408;--deep:#030b14;--panel:#060f1e;--card:#091829;
+  --border:#0d2d50;--accent:#0ea5e9;--cyan:#00f5ff;
+  --green:#00ff88;--orange:#ff6b35;--red:#ff3366;--purple:#7c3aed;
+  --text:#e2f0ff;--muted:#5a8aaa;--dim:#2a5a7a;
+  --fh:'Orbitron',monospace;--fb:'Exo 2',sans-serif;--fm:'Share Tech Mono',monospace;
+  --glow:0 0 20px rgba(14,165,233,.4);--r:8px;--tr:all .2s ease
+}
+body{background:var(--void);color:var(--text);font-family:var(--fb);min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--deep)}::-webkit-scrollbar-thumb{background:var(--accent);border-radius:3px}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes twinkle{0%,100%{opacity:.2}50%{opacity:.9}}
+@keyframes fadein{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes gridflow{0%{background-position:0 0}100%{background-position:0 60px}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:.6}50%{opacity:1}}
+.fadein{animation:fadein .4s ease forwards}
+h1,h2,h3,h4{font-family:var(--fh);letter-spacing:.05em}
+a{color:var(--accent);text-decoration:none}
+input,textarea,select{background:rgba(14,165,233,.05);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:var(--fb);font-size:.88rem;padding:10px 13px;width:100%;outline:none;transition:var(--tr)}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(14,165,233,.15)}
+input::placeholder,textarea::placeholder{color:var(--dim)}
+select option{background:var(--panel)}
+label{display:block;font-size:.68rem;font-family:var(--fh);letter-spacing:.1em;color:var(--muted);margin-bottom:5px;text-transform:uppercase}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;border-radius:var(--r);cursor:pointer;font-family:var(--fh);font-weight:600;letter-spacing:.12em;text-transform:uppercase;transition:var(--tr)}
+.btn-p{background:linear-gradient(135deg,#0ea5e9,#0055bb);color:#fff;padding:11px 24px;font-size:.68rem}
+.btn-p:hover{transform:translateY(-2px);box-shadow:var(--glow)}
+.btn-p:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-o{background:transparent;color:var(--accent);border:1px solid var(--accent);padding:10px 23px;font-size:.68rem}
+.btn-o:hover{background:rgba(14,165,233,.1);box-shadow:var(--glow);transform:translateY(-2px)}
+.btn-g{background:transparent;color:var(--muted);border:none;padding:6px 12px;font-size:.82rem;font-family:var(--fb);cursor:pointer;border-radius:var(--r);transition:var(--tr)}
+.btn-g:hover{color:var(--accent);background:rgba(14,165,233,.06)}
+.card{background:rgba(6,15,30,.88);border:1px solid var(--border);border-radius:12px;backdrop-filter:blur(10px);transition:var(--tr)}
+.card:hover{border-color:rgba(14,165,233,.35);box-shadow:0 4px 22px rgba(14,165,233,.1)}
+.tag{display:inline-block;padding:3px 9px;border-radius:20px;font-size:.58rem;font-family:var(--fh);letter-spacing:.08em;text-transform:uppercase;font-weight:700}
+.t-b{background:rgba(14,165,233,.12);color:var(--accent);border:1px solid rgba(14,165,233,.3)}
+.t-g{background:rgba(0,255,136,.1);color:var(--green);border:1px solid rgba(0,255,136,.3)}
+.t-p{background:rgba(124,58,237,.15);color:#a78bfa;border:1px solid rgba(124,58,237,.3)}
+.t-o{background:rgba(255,107,53,.12);color:var(--orange);border:1px solid rgba(255,107,53,.3)}
+.t-r{background:rgba(255,51,102,.1);color:var(--red);border:1px solid rgba(255,51,102,.3)}
+.sec-title{font-family:var(--fh);font-size:clamp(1.05rem,3vw,1.65rem);font-weight:700;letter-spacing:.08em;display:inline-block}
+.sec-title::after{content:'';display:block;height:2px;background:linear-gradient(90deg,var(--accent),transparent);margin-top:5px}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-3{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px}
+.grid-4{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px}
+@media(max-width:768px){.hm{display:none!important}.mf{width:100%!important}.grid-2{grid-template-columns:1fr!important}}
+@media(min-width:769px){.hd{display:none!important}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+/* ════════════════════════════════════════
+   MARSA – MARON SPACE AGENCY
+   Full-stack e-commerce with Supabase
+   ════════════════════════════════════════ */
+
+/* ── CONFIG: Replace with your Supabase credentials ── */
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const ADMIN_EMAIL = 'einsteinmarvin256@gmail.com';
+const CONFIGURED = SUPABASE_URL !== 'YOUR_SUPABASE_URL';
+
+/* ── SUPABASE CLIENT ── */
+const { createClient } = supabase;
+const db = CONFIGURED ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+/* ── DEMO PRODUCTS (shown before Supabase is set up) ── */
+const DEMO_PRODUCTS = [
+  {id:'d1',name:'MARSA Scout Drone X1',category:'Drones',price:285000,rating:4.8,reviews_count:24,stock:12,image:'🛸',description:'Professional quadcopter with 4K camera, 30-min flight time, GPS return-to-home and obstacle avoidance.',badge:'Bestseller',featured:true},
+  {id:'d2',name:'Arduino Robotics Kit Pro',category:'Robotics',price:125000,rating:4.7,reviews_count:31,stock:20,image:'🤖',description:'Complete robotics kit with Arduino Mega, servo motors, ultrasonic sensors and full project guide.',badge:'New',featured:true},
+  {id:'d3',name:'200W Solar Panel System',category:'Energy Systems',price:420000,rating:4.9,reviews_count:18,stock:8,image:'☀️',description:'High-efficiency monocrystalline solar panel with charge controller and mounting hardware.',badge:'Top Rated',featured:true},
+  {id:'d4',name:'Advanced Science Lab Kit',category:'Science Equipment',price:95000,rating:4.6,reviews_count:42,stock:30,image:'🔬',description:'Full chemistry and physics lab kit for students and researchers. 150+ experiments included.',badge:null,featured:false},
+  {id:'d5',name:'Raspberry Pi 4 Starter Pack',category:'Electronics',price:180000,rating:4.8,reviews_count:67,stock:15,image:'💻',description:'Raspberry Pi 4 (4GB) with case, power supply and microSD preloaded with Raspbian OS.',badge:'Popular',featured:true},
+  {id:'d6',name:'DC Motor Bundle 10-Pack',category:'Electronics',price:45000,rating:4.5,reviews_count:88,stock:50,image:'⚙️',description:'10× high-torque DC motors 12V with encoder feedback. Ideal for robotics and automation.',badge:null,featured:false},
+  {id:'d7',name:'Wind Turbine Generator 500W',category:'Energy Systems',price:550000,rating:4.7,reviews_count:9,stock:5,image:'🌬️',description:'Permanent magnet alternator wind turbine with auto-furling tail for storm protection.',badge:'Limited',featured:false},
+  {id:'d8',name:'MARSA FPV Racing Drone Z3',category:'Drones',price:650000,rating:4.9,reviews_count:11,stock:4,image:'🚁',description:'Racing FPV drone with 5.8GHz video, 250mm carbon fiber frame and F4 flight controller.',badge:'Premium',featured:true},
+  {id:'d9',name:'DIY Electronics Starter Kit',category:'DIY Technology',price:65000,rating:4.4,reviews_count:55,stock:40,image:'🔧',description:'850-piece kit with breadboard, LEDs, resistors, capacitors and project guide.',badge:null,featured:false},
+  {id:'d10',name:'Robotic Arm Kit 6-DOF',category:'Robotics',price:210000,rating:4.6,reviews_count:17,stock:10,image:'🦾',description:'6-axis robotic arm with servo motors, Arduino controller and PC software.',badge:'New',featured:true},
+  {id:'d11',name:'Portable Power Station 1000W',category:'Energy Systems',price:890000,rating:4.8,reviews_count:6,stock:3,image:'⚡',description:'1000Wh LiFePO4, 1000W AC output, USB-C 100W, solar input. For field research.',badge:'Premium',featured:false},
+  {id:'d12',name:'Digital Multimeter Pro',category:'Electronics',price:28000,rating:4.7,reviews_count:93,stock:35,image:'📊',description:'True RMS digital multimeter, auto-ranging, capacitance, frequency and temperature.',badge:null,featured:false},
+  {id:'d13',name:'Smart Telescope 80AZ',category:'Science Equipment',price:320000,rating:4.8,reviews_count:22,stock:7,image:'🔭',description:'80mm refractor with smartphone adapter, GoTo motorized mount and star atlas.',badge:'Space',featured:true},
+  {id:'d14',name:'AI Jetson Nano Dev Board',category:'Innovation Projects',price:175000,rating:4.9,reviews_count:8,stock:6,image:'🧠',description:'NVIDIA Jetson Nano for AI edge computing, computer vision and robotics.',badge:'AI',featured:false},
+  {id:'d15',name:'Mini CNC Router Kit',category:'DIY Technology',price:495000,rating:4.5,reviews_count:14,stock:5,image:'🏗️',description:'GRBL 3-axis CNC, 300×300mm work area, spindle and laser compatible.',badge:null,featured:false},
+  {id:'d16',name:'3D Printer Filament 5-Pack',category:'Innovation Projects',price:38000,rating:4.3,reviews_count:29,stock:60,image:'🖨️',description:'1kg PLA spools in 5 colors. Works with all standard FDM 3D printers.',badge:null,featured:false},
+];
+const CATS=['All','Drones','Robotics','Electronics','Energy Systems','Science Equipment','DIY Technology','Innovation Projects','Electricity'];
+
+/* ── SUPABASE HELPERS ── */
+async function sbSignUp(email,password,name){
+  const {data,error}=await db.auth.signUp({email,password,options:{data:{name}}});
+  if(error)throw error;
+  if(data.user){
+    await db.from('profiles').upsert({id:data.user.id,name,email,is_admin:email===ADMIN_EMAIL});
+  }
+  return data;
+}
+async function sbSignIn(email,password){
+  const {data,error}=await db.auth.signInWithPassword({email,password});
+  if(error)throw error;
+  return data;
+}
+async function sbSignOut(){await db.auth.signOut();}
+async function sbGetProfile(userId){
+  const {data}=await db.from('profiles').select('*').eq('id',userId).single();
+  return data;
+}
+async function sbGetProducts(){
+  const {data,error}=await db.from('products').select('*').order('created_at',{ascending:false});
+  if(error)throw error;
+  return data||[];
+}
+async function sbAddProduct(p){
+  const {data,error}=await db.from('products').insert([p]).select().single();
+  if(error)throw error;
+  return data;
+}
+async function sbUpdateProduct(id,updates){
+  const {data,error}=await db.from('products').update(updates).eq('id',id).select().single();
+  if(error)throw error;
+  return data;
+}
+async function sbDeleteProduct(id){
+  const {error}=await db.from('products').delete().eq('id',id);
+  if(error)throw error;
+}
+async function sbCreateOrder(order){
+  const {data,error}=await db.from('orders').insert([order]).select().single();
+  if(error)throw error;
+  return data;
+}
+async function sbGetOrders(){
+  const {data,error}=await db.from('orders').select('*').order('created_at',{ascending:false});
+  if(error)throw error;
+  return data||[];
+}
+async function sbUpdateOrderStatus(id,status){
+  const {error}=await db.from('orders').update({status}).eq('id',id);
+  if(error)throw error;
+}
+async function sbGetUserOrders(userId){
+  const {data,error}=await db.from('orders').select('*').eq('user_id',userId).order('created_at',{ascending:false});
+  if(error)throw error;
+  return data||[];
+}
+async function sbUploadImage(file,name){
+  const ext=file.name.split('.').pop();
+  const path=`products/${name.replace(/\s/g,'-')}-${Date.now()}.${ext}`;
+  const {error}=await db.storage.from('product-images').upload(path,file);
+  if(error)throw error;
+  const {data}=db.storage.from('product-images').getPublicUrl(path);
+  return data.publicUrl;
+}
+async function sbGetReviews(productId){
+  const {data}=await db.from('reviews').select('*').eq('product_id',productId).order('created_at',{ascending:false});
+  return data||[];
+}
+async function sbAddReview(review){
+  const {data,error}=await db.from('reviews').insert([review]).select().single();
+  if(error)throw error;
+  return data;
+}
+
+/* ── CART REDUCER ── */
+const cartR=(s,a)=>{
+  if(a.t==='ADD'){const e=s.find(i=>i.id===a.item.id);return e?s.map(i=>i.id===a.item.id?{...i,qty:i.qty+(a.qty||1)}:i):[...s,{...a.item,qty:a.qty||1}];}
+  if(a.t==='REMOVE')return s.filter(i=>i.id!==a.id);
+  if(a.t==='QTY')return s.map(i=>i.id===a.id?{...i,qty:Math.max(1,a.qty)}:i);
+  if(a.t==='CLEAR')return[];
+  return s;
+};
+
+/* ── STARS BG ── */
+function Stars(){
+  const st=React.useMemo(()=>Array.from({length:60},(_,i)=>({id:i,x:Math.random()*100,y:Math.random()*100,s:Math.random()*2+.4,d:Math.random()*4,dur:Math.random()*3+2})),[]);
+  return <div style={{position:'fixed',inset:0,pointerEvents:'none',zIndex:0,overflow:'hidden'}}>
+    {st.map(s=><div key={s.id} style={{position:'absolute',left:`${s.x}%`,top:`${s.y}%`,width:`${s.s}px`,height:`${s.s}px`,borderRadius:'50%',background:'rgba(14,165,233,.7)',animation:`twinkle ${s.dur}s ${s.d}s infinite`}}/>)}
+  </div>;
+}
+
+/* ── TOAST ── */
+function Toast({msg}){return msg?<div style={{position:'fixed',bottom:22,left:'50%',transform:'translateX(-50%)',background:'var(--panel)',border:'1px solid var(--accent)',borderRadius:8,padding:'10px 20px',fontFamily:'var(--fh)',fontSize:'.7rem',color:'var(--accent)',zIndex:9999,boxShadow:'var(--glow)',animation:'fadein .3s ease',whiteSpace:'nowrap'}}>{msg}</div>:null;}
+
+/* ── SETUP BANNER ── */
+function SetupBanner(){
+  if(CONFIGURED)return null;
+  return <div style={{background:'linear-gradient(135deg,rgba(255,107,53,.15),rgba(255,51,102,.1))',border:'1px solid rgba(255,107,53,.4)',borderRadius:10,padding:'16px 20px',marginBottom:24,display:'flex',gap:14,alignItems:'flex-start'}}>
+    <span style={{fontSize:'1.5rem',flexShrink:0}}>⚠️</span>
+    <div>
+      <div style={{fontFamily:'var(--fh)',fontSize:'.78rem',color:'var(--orange)',marginBottom:5}}>SUPABASE NOT CONFIGURED — DEMO MODE</div>
+      <div style={{fontSize:'.8rem',color:'var(--muted)',lineHeight:1.7}}>
+        The site is running with demo data. To go live with real orders, payments and user accounts:<br/>
+        1. Create a free account at <strong style={{color:'var(--accent)'}}>supabase.com</strong><br/>
+        2. Create a new project and run the <strong style={{color:'var(--accent)'}}>supabase-setup.sql</strong> file in the SQL editor<br/>
+        3. Replace <strong style={{color:'var(--accent)'}}>YOUR_SUPABASE_URL</strong> and <strong style={{color:'var(--accent)'}}>YOUR_SUPABASE_ANON_KEY</strong> in index.html with your real credentials
+      </div>
+    </div>
+  </div>;
+}
+
+/* ── NAV ── */
+function Nav({page,go,cartN,user,onLogout}){
+  const [open,setOpen]=React.useState(false);
+  const [scrolled,setScrolled]=React.useState(false);
+  React.useEffect(()=>{const h=()=>setScrolled(window.scrollY>20);window.addEventListener('scroll',h);return()=>window.removeEventListener('scroll',h)},[]);
+  const links=[['home','Home'],['shop','Shop'],['innovation','Innovation'],['electronics','Electronics'],['robotics','Robotics'],['drones','Drones'],['energy','Energy Tech'],['diy','DIY Science'],['about','About'],['contact','Contact']];
+  return <nav style={{position:'fixed',top:0,left:0,right:0,zIndex:1000,background:scrolled?'rgba(2,4,8,.97)':'rgba(2,4,8,.88)',borderBottom:`1px solid ${scrolled?'rgba(14,165,233,.3)':'rgba(14,165,233,.1)'}`,backdropFilter:'blur(20px)',transition:'all .3s'}}>
+    <div style={{background:'linear-gradient(90deg,#0ea5e9,#7c3aed)',padding:'3px 18px',fontSize:'.6rem',fontFamily:'var(--fh)',letterSpacing:'.12em',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+      <span>🛰️ MARON SPACE AGENCY — Science · Technology · Innovation</span>
+      <span className="hm">📞 0706651038 · einsteinmarvin256@gmail.com</span>
+    </div>
+    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 18px',height:56}}>
+      <div onClick={()=>go('home')} style={{cursor:'pointer',display:'flex',alignItems:'center',gap:9}}>
+        <div style={{width:32,height:32,borderRadius:'50%',background:'linear-gradient(135deg,#0ea5e9,#7c3aed)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'.95rem',boxShadow:'0 0 12px rgba(14,165,233,.5)'}}>🛸</div>
+        <div><div style={{fontFamily:'var(--fh)',fontWeight:900,fontSize:'.9rem',letterSpacing:'.15em',color:'var(--accent)',lineHeight:1}}>MARSA</div><div style={{fontSize:'.48rem',fontFamily:'var(--fh)',color:'var(--muted)',letterSpacing:'.1em'}}>MARON SPACE AGENCY</div></div>
+      </div>
+      <div className="hm" style={{display:'flex',gap:1,alignItems:'center'}}>
+        {links.map(([id,l])=><button key={id} onClick={()=>go(id)} className="btn-g" style={{fontSize:'.64rem',fontFamily:'var(--fh)',letterSpacing:'.07em',padding:'5px 8px',color:page===id?'var(--accent)':'var(--muted)',borderBottom:page===id?'1px solid var(--accent)':'1px solid transparent',borderRadius:0}}>{l}</button>)}
+        <button onClick={()=>go('admin')} style={{background:'rgba(124,58,237,.15)',border:'1px solid rgba(124,58,237,.4)',color:'#a78bfa',padding:'4px 10px',borderRadius:20,cursor:'pointer',fontSize:'.58rem',fontFamily:'var(--fh)',letterSpacing:'.1em',marginLeft:5}}>⚡ ADMIN</button>
+      </div>
+      <div style={{display:'flex',gap:5,alignItems:'center'}}>
+        <button onClick={()=>go('search')} className="btn-g" style={{fontSize:'.95rem',padding:5}}>🔍</button>
+        <button onClick={()=>go('wishlist')} className="btn-g" style={{fontSize:'.95rem',padding:5}}>♡</button>
+        <button onClick={()=>go('cart')} style={{background:'rgba(14,165,233,.1)',border:'1px solid rgba(14,165,233,.3)',borderRadius:7,padding:'4px 12px',cursor:'pointer',display:'flex',alignItems:'center',gap:5,color:'var(--accent)',fontFamily:'var(--fh)',fontSize:'.68rem'}}>
+          🛒{cartN>0&&<span style={{background:'var(--accent)',color:'#000',borderRadius:'50%',width:16,height:16,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'.58rem',fontWeight:700}}>{cartN}</span>}
+        </button>
+        {user?<button onClick={()=>go('account')} style={{background:'rgba(14,165,233,.1)',border:'1px solid rgba(14,165,233,.3)',borderRadius:'50%',width:32,height:32,cursor:'pointer',color:'var(--accent)',fontSize:'.85rem'}}>👤</button>
+        :<button onClick={()=>go('login')} className="btn btn-p" style={{padding:'5px 13px',fontSize:'.6rem'}}>LOGIN</button>}
+        <button onClick={()=>setOpen(!open)} className="hd btn-g" style={{fontSize:'1.1rem',padding:4}}>☰</button>
+      </div>
+    </div>
+    {open&&<div className="hd" style={{padding:'9px 16px 13px',borderTop:'1px solid var(--border)',background:'var(--panel)',display:'flex',flexDirection:'column',gap:2}}>
+      {links.map(([id,l])=><button key={id} onClick={()=>{go(id);setOpen(false)}} className="btn-g" style={{textAlign:'left',fontFamily:'var(--fh)',fontSize:'.68rem'}}>{l}</button>)}
+      <button onClick={()=>{go('admin');setOpen(false)}} className="btn-g" style={{textAlign:'left',color:'#a78bfa',fontFamily:'var(--fh)',fontSize:'.68rem'}}>⚡ ADMIN DASHBOARD</button>
+    </div>}
+  </nav>;
+}
+
+/* ── PRODUCT CARD ── */
+function PCard({p,onAdd,onDetail,wish,toggleWish}){
+  const [qty,setQty]=React.useState(1);
+  const imgIsUrl=p.image&&(p.image.starts
